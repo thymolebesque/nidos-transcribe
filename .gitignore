@@ -1,13 +1,47 @@
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+.eggs/
+dist/
+build/
 .venv/
+venv/
+ENV/
 .env
+.env.*
 
-# Models & store
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Unit test / coverage
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+htmlcov/
+
+# Models & local store
 app/store/models/
 app/store/speaker_db.json
 
-# OS
+# OS / misc
 .DS_Store
 Thumbs.db
+
+# Docker
+*.pid
+*.seed
+*.bak
+*.orig
