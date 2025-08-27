@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Models & store
+app/store/models/
+app/store/speaker_db.json
+
+# OS
+.DS_Store
