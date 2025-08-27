@@ -1,0 +1,50 @@
+# Ignore Python cache & build
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg-info
+.eggs/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Environment files
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Logs & tests cache
+*.log
+*.out
+*.err
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local data that should not go in Docker
+app/store/models/
+app/store/speaker_db.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker-compose files (they aren’t needed in image context)
+docker-compose.yml
+docker-composer.yaml
