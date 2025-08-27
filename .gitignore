@@ -10,3 +10,4 @@ app/store/speaker_db.json
 
 # OS
 .DS_Store
+Thumbs.db
