@@ -11,13 +11,18 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    # Mount local store so models and speaker_db.json persist and are NOT baked into the image
     volumes:
       - ./app/store:/app/app/store
+      # Mount the simple web UI for live editing/reload in the container
       - ./web:/app/web
+    # Optional GPU (uncomment if you have NVIDIA toolkit set up)
     deploy:
       resources:
         reservations:
           devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+            - capabilities: [gpu]
+    device_requests:
+      - driver: nvidia
+        count: all
+        capabilities: [gpu]
