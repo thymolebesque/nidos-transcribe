@@ -1,6 +1,9 @@
 from __future__ import annotations
 from typing import List, Tuple, Dict, Optional
 import numpy as np
+import logging
+logger = logging.getLogger(__name__)
+
 from sklearn.cluster import AgglomerativeClustering
 
 from app.config import settings
@@ -15,16 +18,25 @@ def label_segments_with_coach(
 ) -> List[str]:
     """
     Returns a list of labels with initial COACH/UNK classification and temporal smoothing.
+    Also logs cosine similarities if enabled in settings.
     """
     if coach_emb is None:
         return ["UNK"] * len(segments)
+
+    # --- NEW: log cosine similarities ---
+    if settings.LOG_COSINE_SCORES and len(segments) == len(embs):
+        logger.info("=== Coach cosine similarities per VAD segment ===")
+        for (t0, t1), emb in zip(segments, embs):
+            sim = float(cosine(emb, coach_emb))
+            logger.info(f"{t0:7.2f}–{t1:7.2f}  sim={sim:.3f}")
+        logger.info("=== end similarities ===")
 
     raw = np.array([1 if cosine(e, coach_emb) >= thr else 0 for e in embs], dtype=np.int32)
 
     if len(raw) == 0:
         return []
 
-    # median smoothing over window=3
+    # median smoothing over window
     k = max(1, smooth_window)
     smoothed = raw.copy()
     if k > 1 and len(raw) >= k:
@@ -47,31 +59,23 @@ def cluster_unknowns(
     labels: List[str],
     max_speakers: int = 2,
 ) -> List[str]:
-    """
-    Cluster segments labeled UNK into OTHER_1/OTHER_2..., then promote dominant to JONGERE.
-    Returns final labels (COACH / JONGERE / OTHER_i).
-    """
+    """Cluster segments labeled UNK into OTHER_1/OTHER_2..., then promote dominant to JONGERE."""
     final = labels.copy()
-    # indices of UNK
     unk_idx = [i for i, lab in enumerate(labels) if lab == "UNK"]
     if len(unk_idx) == 0:
-        # no unknowns; ensure we have at least COACH/JONGERE speakers list later
         return final
 
     X = np.vstack([embs[i] for i in unk_idx])
     n_clusters = min(max_speakers, max(1, min(len(unk_idx), 4)))
-    # Edge: if only 1 unknown segment, clustering is trivial
     if len(unk_idx) == 1 or n_clusters == 1:
         cluster_labels = np.zeros((len(unk_idx),), dtype=int)
     else:
         model = AgglomerativeClustering(n_clusters=n_clusters)
         cluster_labels = model.fit_predict(X)
 
-    # Assign OTHER_k labels
     for j, i in enumerate(unk_idx):
         final[i] = f"OTHER_{int(cluster_labels[j])+1}"
 
-    # Determine dominant non-coach cluster by total duration -> JONGERE
     durations: Dict[str, float] = {}
     for i, lab in enumerate(final):
         if lab != "COACH":
@@ -79,7 +83,6 @@ def cluster_unknowns(
 
     if durations:
         dominant = max(durations.items(), key=lambda kv: kv[1])[0]
-        # relabel that cluster as JONGERE
         final = ["JONGERE" if lab == dominant else lab for lab in final]
 
     return final

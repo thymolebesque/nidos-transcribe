@@ -1,3 +1,4 @@
+# app/config.py
 import os
 from pathlib import Path
 from dotenv import load_dotenv
@@ -26,9 +27,10 @@ def _getenv_bool(key: str, default: bool) -> bool:
     v = os.getenv(key)
     if v is None:
         return default
-    return v.lower() in ("1", "true", "yes", "y", "on")
+    return str(v).strip().lower() in ("1", "true", "yes", "y", "on")
 
 class Settings:
+    # Core
     WHISPER_MODEL: str = os.getenv("WHISPER_MODEL", "large-v3")
     LANGUAGE: str = os.getenv("LANGUAGE", "nl")
     COACH_THRESHOLD: float = _getenv_float("COACH_THRESHOLD", 0.72)
@@ -37,6 +39,9 @@ class Settings:
     MIN_SEG_DUR: float = _getenv_float("MIN_SEG_DUR", 0.5)
     MERGE_GAP: float = _getenv_float("MERGE_GAP", 0.2)
     OFFLINE_ONLY: bool = _getenv_bool("OFFLINE_ONLY", True)
+
+    # Logging toggle (NEW)
+    LOG_COSINE_SCORES: bool = _getenv_bool("LOG_COSINE_SCORES", False)
 
     # Paths
     SPEAKER_DB_PATH: Path = STORE_DIR / "speaker_db.json"
@@ -54,6 +59,8 @@ class Settings:
         return self.SB_ECAPA_LOCAL_DIR
 
 settings = Settings()
+
+# Ensure dirs exist
 STORE_DIR.mkdir(parents=True, exist_ok=True)
 (settings.WHISPER_LOCAL_DIR).mkdir(parents=True, exist_ok=True)
 (settings.SB_ECAPA_LOCAL_DIR).mkdir(parents=True, exist_ok=True)

@@ -4,6 +4,13 @@ from fastapi.staticfiles import StaticFiles
 
 from app.routers import health, enroll, transcribe
 
+import logging
+# show INFO from our packages
+logging.basicConfig(level=logging.INFO)
+logging.getLogger("app").setLevel(logging.INFO)
+logging.getLogger("app.services.diarization").setLevel(logging.INFO)
+
+
 app = FastAPI(title="nidos-transcribe", version="1.0.0")
 
 app.add_middleware(
